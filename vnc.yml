@@ -1,0 +1,32 @@
+name: Ubuntu VNC
+
+on: [workflow_dispatch]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install Desktop Environment & VNC
+        run: |
+          sudo apt update
+          sudo apt install xfce4 xfce4-goodies tightvncserver git -y
+          mkdir -p ~/.vnc
+          echo "StrongPass123" | vncpasswd -f > ~/.vnc/passwd
+          chmod 600 ~/.vnc/passwd
+          echo "#!/bin/bash
+          xrdb $HOME/.Xresources
+          startxfce4 &" > ~/.vnc/xstartup
+          chmod +x ~/.vnc/xstartup
+          vncserver :1 -geometry 1280x720 -depth 24
+
+      - name: Setup noVNC + localtunnel
+        run: |
+          git clone https://github.com/novnc/noVNC.git ~/noVNC
+          git clone https://github.com/novnc/websockify ~/noVNC/utils/websockify
+          nohup ~/noVNC/utils/launch.sh --vnc localhost:5901 --listen 6080 &
+          sleep 5
+          npm install -g localtunnel
+          nohup lt --port 6080 --subdomain ubuntu-vnc &
+
+      - name: Keep Alive
+        run: sleep 6h
