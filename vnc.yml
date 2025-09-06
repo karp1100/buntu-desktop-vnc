@@ -26,7 +26,12 @@ jobs:
           nohup ~/noVNC/utils/launch.sh --vnc localhost:5901 --listen 6080 &
           sleep 5
           npm install -g localtunnel
-          nohup lt --port 6080 --subdomain ubuntu-vnc &
+          nohup lt --port 6080 > ~/lt.log 2>&1 &
+
+      - name: Show tunnel URL
+        run: |
+          sleep 5
+          cat ~/lt.log
 
       - name: Keep Alive
         run: sleep 6h
